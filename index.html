@@ -27,6 +27,9 @@ body{font-family:'Segoe UI',Arial,sans-serif;font-size:14px;background:#f4f6fa;c
 @media(max-width:560px){.c2,.c3{grid-template-columns:1fr}}
 label{display:block;font-size:11px;color:#666;margin-bottom:4px;font-weight:600;text-transform:uppercase;letter-spacing:.03em}
 input,select,textarea{width:100%;font-size:14px;padding:9px 11px;border:1px solid #d0d8e4;border-radius:8px;background:#f8fafc;color:#1a1a1a;font-family:inherit;transition:border .15s}
+input[type=date]{-webkit-appearance:none;appearance:none;min-height:38px}
+input[type=date]::-webkit-date-and-time-value{text-align:left;margin:0}
+input[type=date]::-webkit-datetime-edit{text-align:left}
 input:focus,select:focus,textarea:focus{outline:none;border-color:#185FA5;background:#fff}
 input.auto{background:#eef4ff;color:#1a3d6b;font-weight:600;border-color:#b8cef0;cursor:default}
 textarea{resize:vertical;min-height:90px}
