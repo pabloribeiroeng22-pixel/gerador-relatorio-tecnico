@@ -210,10 +210,8 @@ textarea{resize:vertical;min-height:90px}
     <div class="field-row c1" style="margin-bottom:10px">
       <div><label>Situação atual (opcional)</label><input type="text" id="cad-sit" placeholder="Ex: aguardando fundação"/></div>
     </div>
-    <div class="field-row c3" style="margin-bottom:10px">
-      <div><label>Aprovação (opcional)</label><input type="text" id="cad-aprov" placeholder="Ex: Aprovado"/></div>
-      <div><label>Produção (opcional)</label><input type="text" id="cad-prod" placeholder="Ex: Em andamento"/></div>
-      <div><label>Prazo de montagem (opcional)</label><input type="text" id="cad-pmont" placeholder="dd/mm/aaaa" maxlength="10" inputmode="numeric" oninput="mascaraData(this)"/></div>
+    <div class="field-row c1" style="margin-bottom:10px">
+      <div><label>Previsão de término (opcional)</label><input type="date" id="cad-pmont"/></div>
     </div>
     <div style="display:flex;gap:8px;margin-top:6px">
       <button type="button" onclick="salvarObra()" style="background:#185FA5;color:#fff;border:none;padding:10px 18px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer">✓ Salvar obra</button>
@@ -270,7 +268,7 @@ textarea{resize:vertical;min-height:90px}
   <div class="card-title">📅 Visita</div>
   <div class="field-row c2">
     <div><label>Data da visita</label>
-      <input type="text" id="data-visita" placeholder="dd/mm/aaaa" maxlength="10" inputmode="numeric" oninput="mascaraData(this)"/>
+      <input type="date" id="data-visita"/>
     </div>
     <div>
       <label>Nome da empresa</label>
@@ -855,19 +853,6 @@ function confirmarImportar(){
   document.getElementById('import-texto').value = '';
 }
 
-function mascaraData(el) {
-  var v = el.value.replace(/\D/g, '').slice(0, 8);
-  if (v.length > 4) v = v.slice(0,2) + '/' + v.slice(2,4) + '/' + v.slice(4);
-  else if (v.length > 2) v = v.slice(0,2) + '/' + v.slice(2);
-  el.value = v;
-}
-
-function dataBRparaISO(str) {
-  var m = (str || '').match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
-  if (!m) return '';
-  return m[3] + '-' + m[2] + '-' + m[1];
-}
-
 function abrirCadastro(){
   document.getElementById('cad-form').style.display = 'block';
   document.getElementById('btn-cad-obra').style.display = 'none';
@@ -875,7 +860,7 @@ function abrirCadastro(){
 function cancelarCadastro(){
   document.getElementById('cad-form').style.display = 'none';
   document.getElementById('btn-cad-obra').style.display = 'inline-block';
-  ['cad-p','cad-c','cad-cidade','cad-uf','cad-end','cad-est','cad-sit','cad-aprov','cad-prod','cad-pmont'].forEach(function(id){ var el=document.getElementById(id); if(el) el.value=''; });
+  ['cad-p','cad-c','cad-cidade','cad-uf','cad-end','cad-est','cad-sit','cad-pmont'].forEach(function(id){ var el=document.getElementById(id); if(el) el.value=''; });
   document.getElementById('cad-msg').style.display='none';
 }
 function salvarObra(){
@@ -891,7 +876,7 @@ function salvarObra(){
   }
   // Normaliza o pedido para o formato P00XXXX se vier só número
   if (/^\d+$/.test(p)) p = 'P' + p.padStart(6,'0');
-  var pmont = dataBRparaISO(document.getElementById('cad-pmont').value); // convertido de dd/mm/aaaa
+  var pmont = document.getElementById('cad-pmont').value; // já vem YYYY-MM-DD
   var pconcl = '';
   if (pmont){
     var d = new Date(pmont+'T00:00:00'); d.setDate(d.getDate()+30);
@@ -902,8 +887,6 @@ function salvarObra(){
     end: document.getElementById('cad-end').value.trim(),
     est: document.getElementById('cad-est').value.trim(),
     sit: document.getElementById('cad-sit').value.trim(),
-    aprov: document.getElementById('cad-aprov').value.trim(),
-    prod: document.getElementById('cad-prod').value.trim(),
     pmont: pmont, pconcl: pconcl, montsrc:'manual',
     _manual: true
   };
@@ -1007,38 +990,27 @@ function fmtData(iso){
 function fasesObra(r){
   var hoje = new Date();
   var fases = [];
-  // 1. Projeto / Aprovação
-  var aprovOk = r.aprov && /aprovad/i.test(r.aprov);
+  // 1. Início da obra
   fases.push({
-    nome:'Projeto / Aprovação',
-    estado: aprovOk ? 'done' : (r.aprov ? 'active' : 'pending'),
-    status: r.aprov ? r.aprov : 'Sem informação'
+    nome:'Início da obra',
+    estado: r.pprod ? 'done' : 'pending',
+    status: r.pprod ? fmtData(r.pprod) : 'Sem informação'
   });
-  // 2. Prazo Final de Produção
-  var prodTxt = r.prod || '';
-  var prodDone = /conclu|ok|finaliz|pronto|produzid/i.test(prodTxt);
-  var prodAndamento = /andamento|em prod/i.test(prodTxt);
-  fases.push({
-    nome:'Prazo Final de Produção',
-    estado: prodDone ? 'done' : (prodTxt ? 'active' : 'pending'),
-    status: r.pprod ? fmtData(r.pprod) + (prodTxt ? ' · '+prodTxt : '') : (prodTxt || 'Sem informação')
-  });
-  // 3. Montagem (data já vem tratada: texto perto de 'montagem' senão prazo final)
-  var montEstado = 'pending';
-  var montStatus = 'Aguardando';
+  // 2. Previsão de término
+  var termEstado = 'pending';
+  var termStatus = 'A definir';
   if (r.pmont){
-    var dM = new Date(r.pmont+'T00:00:00');
-    if (dM < hoje && !prodDone) { montEstado = 'late'; montStatus = fmtData(r.pmont) + ' (vencido)'; }
-    else if (prodDone || prodAndamento) { montEstado = 'active'; montStatus = fmtData(r.pmont); }
-    else { montStatus = fmtData(r.pmont); }
+    var dT = new Date(r.pmont+'T00:00:00');
+    if (dT < hoje) { termEstado = 'late'; termStatus = fmtData(r.pmont) + ' (vencido)'; }
+    else { termEstado = 'active'; termStatus = fmtData(r.pmont); }
   }
-  fases.push({nome:'Montagem', estado:montEstado, status:montStatus});
-  // 4. Entrega Técnica (30 dias após a montagem)
+  fases.push({nome:'Previsão de término', estado:termEstado, status:termStatus});
+  // 3. Entrega
   var concluida = r.sit && /entregue|conclu|finaliz/i.test(r.sit) && !/falta|aguard|pendente/i.test(r.sit);
   fases.push({
-    nome:'Entrega Técnica',
+    nome:'Entrega',
     estado: concluida ? 'done' : 'pending',
-    status: concluida ? 'Obra concluída' : (r.pconcl ? fmtData(r.pconcl) + ' (30 dias após montagem)' : 'A definir')
+    status: concluida ? 'Obra concluída' : (r.pconcl ? fmtData(r.pconcl) : 'A definir')
   });
   return fases;
 }
@@ -1046,7 +1018,7 @@ function fasesObra(r){
 function renderTimeline(r){
   var wrap = document.getElementById('tl-wrap');
   // Só mostra se houver ao menos um dado de fase
-  if (!r || (!r.aprov && !r.prod && !r.pprod && !r.pmont)){
+  if (!r || (!r.pprod && !r.pmont)){
     wrap.style.display = 'none';
     return;
   }
@@ -1575,8 +1547,8 @@ function gerarPDF() {
   var local = document.getElementById('af-local').value || '—';
   var end = document.getElementById('af-end').value || '';
   var empr = document.getElementById('empreendimento').value || '—';
-  var dv = document.getElementById('data-visita').value.trim();
-  var dataFmt = /^\d{2}\/\d{2}\/\d{4}$/.test(dv) ? dv : '—';
+  var dv = document.getElementById('data-visita').value;
+  var dataFmt = dv ? new Date(dv+'T12:00:00').toLocaleDateString('pt-BR') : '—';
   var cons = document.getElementById('consideracoes').value || '—';
   var objs = Array.from(document.querySelectorAll('#checks .chk.active')).map(function(el){ return el.getAttribute('data-val'); });
   var equipe = equipeLinhas();
@@ -1593,7 +1565,7 @@ function gerarPDF() {
         var inner = '<div class="efase"><div class="efase-t">'+g.fase+'</div>';
         if (g.objetivo) inner += '<div class="efase-obj"><strong>Objetivo:</strong> '+g.objetivo+'</div>';
         if (g.atividades && g.atividades.length) inner += '<div class="efase-ativ"><strong>Atividades:</strong> '+g.atividades.join(' • ')+'</div>';
-        if (g.membros && g.membros.length) inner += '<div class="efase-eq"><strong>Equipe:</strong> '+g.membros.join(', ')+(g.detalhe?' <em>('+g.detalhe+')</em>':'')+'</div>';
+        if (g.detalhe) inner += '<div class="efase-ativ"><strong>Detalhe:</strong> '+g.detalhe+'</div>';
         return inner + '</div>';
       }).join('')
     : '<span class="nd">Não informado</span>';
@@ -1614,7 +1586,7 @@ function gerarPDF() {
   // Linha do tempo da obra (só entra no PDF se o checkbox estiver marcado)
   var tlHtml = '';
   var incluirTL = document.getElementById('tl-no-pdf') && document.getElementById('tl-no-pdf').checked;
-  if (incluirTL && atual && (atual.aprov || atual.prod || atual.pprod || atual.pmont)){
+  if (incluirTL && atual && (atual.pprod || atual.pmont)){
     var fs = fasesObra(atual);
     var cores = {done:'#16a34a',active:'#185FA5',pending:'#cbd5e1',late:'#dc2626'};
     var ic = {done:'✓',active:'●',pending:'',late:'!'};
@@ -1690,7 +1662,7 @@ function gerarPDF() {
   +'<div class="sec"><div class="st">Dados da visita</div>'
   +'<div class="g3"><div class="f"><div class="fl">Data</div><div class="fv">'+dataFmt+'</div></div><div class="f"><div class="fl">Responsável técnico</div><div class="fv">'+ENG_NOME+'</div></div><div class="f"><div class="fl">CREA</div><div class="fv">'+ENG_CREA+'</div></div></div>'
   +'</div>'
-  +(equipe.length?'<div class="sec"><div class="st">Equipe presente por fase</div>'+equipeHtml+'</div>':'')
+  +(equipe.length?'<div class="sec"><div class="st">Atividades por grupo vistoriado</div>'+equipeHtml+'</div>':'')
   +tlHtml
   +'<div class="sec"><div class="st">Objetivo da visita</div>'+(objs.length?'<div class="chips">'+objs.map(function(o){return'<span class="chip">'+o+'</span>';}).join('')+'</div>':'<span class="nd">Não informado</span>')+'</div>'
   +'<div class="sec"><div class="st">Considerações técnicas</div><div class="ta">'+cons.replace(/\n/g,'<br>')+'</div></div>'
@@ -1789,7 +1761,7 @@ if ('serviceWorker' in navigator) {
     + "self.addEventListener('activate',function(e){e.waitUntil(self.clients.claim())});"
     + "self.addEventListener('fetch',function(e){"
     + "e.respondWith(fetch(e.request).then(function(r){"
-    + "var c=r.clone();caches.open('jmr-v1').then(function(cache){try{cache.put(e.request,c)}catch(x){}});return r;"
+    + "var c=r.clone();caches.open('relatorio-tecnico-v1').then(function(cache){try{cache.put(e.request,c)}catch(x){}});return r;"
     + "}).catch(function(){return caches.match(e.request).then(function(m){return m||caches.match('./')})}))"
     + "});";
   try {
