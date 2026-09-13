@@ -411,7 +411,7 @@ textarea{resize:vertical;min-height:90px}
       <div style="font-size:11.5px;color:#8a94a3">Pagamento único · relatórios ilimitados · sem mensalidade</div>
     </div>
 
-    <a href="https://pay.hotmart.com/SEU-LINK-DE-VENDA-AQUI" target="_blank" style="display:block;text-align:center;background:#C2620A;color:#fff;padding:13px;border-radius:9px;font-size:15px;font-weight:700;text-decoration:none;margin-bottom:10px">Comprar acesso vitalício</a>
+    <a href="https://go.hotmart.com/O107588698L" target="_blank" style="display:block;text-align:center;background:#C2620A;color:#fff;padding:13px;border-radius:9px;font-size:15px;font-weight:700;text-decoration:none;margin-bottom:10px">Comprar acesso vitalício</a>
     <button onclick="mostrarPaywallNeutro()" style="width:100%;background:none;border:none;color:#8a94a3;font-size:12.5px;padding:6px;cursor:pointer">Fechar por enquanto</button>
 
     <div style="border-top:1px solid #eef0f4;margin:16px 0 12px"></div>
@@ -515,43 +515,41 @@ async function validarChave() {
   msg.style.display = 'block'; msg.style.color = '#5b6472'; msg.textContent = 'Verificando chave...';
 
   try {
-    // 1) busca a chave na tabela
-    var resp = await fetch(SB_URL + '/rest/v1/licencas_relatorio?chave=eq.' + encodeURIComponent(val) + '&select=chave,usado,comprador', {
-      headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY }
+    // Chama a função ativar_licenca no banco — ela verifica e marca a chave
+    // como usada em uma única operação atômica (evita corrida entre 2 aparelhos)
+    // e nunca expõe a tabela de chaves diretamente.
+    var resp = await fetch(SB_URL + '/rest/v1/rpc/ativar_licenca', {
+      method: 'POST',
+      headers: {
+        'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ chave_input: val })
     });
-    var linhas = await resp.json();
+    var resultado = await resp.json();
 
-    if (!resp.ok || !linhas.length) {
+    if (!resp.ok || !resultado.length) {
+      msg.style.color = '#dc2626';
+      msg.textContent = 'Não foi possível verificar agora. Confira sua internet e tente de novo.';
+      return;
+    }
+
+    var status = resultado[0].status;
+
+    if (status === 'nao_encontrada') {
       msg.style.color = '#dc2626';
       msg.textContent = 'Chave não encontrada. Confira o e-mail recebido após a compra.';
       return;
     }
-    if (linhas[0].usado) {
+    if (status === 'ja_usada') {
       msg.style.color = '#dc2626';
       msg.textContent = 'Essa chave já foi ativada em outro aparelho. Cada compra libera 1 aparelho só.';
       return;
     }
 
-    // 2) marca como usada (só passa se ainda estiver "usado=false" — evita corrida entre dois aparelhos)
-    var upd = await fetch(SB_URL + '/rest/v1/licencas_relatorio?chave=eq.' + encodeURIComponent(val) + '&usado=eq.false', {
-      method: 'PATCH',
-      headers: {
-        'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY,
-        'Content-Type': 'application/json', 'Prefer': 'return=representation'
-      },
-      body: JSON.stringify({ usado: true, ativado_em: new Date().toISOString() })
-    });
-    var atualizadas = await upd.json();
-
-    if (!upd.ok || !atualizadas.length) {
-      msg.style.color = '#dc2626';
-      msg.textContent = 'Essa chave acabou de ser ativada em outro aparelho. Fale com quem vendeu o app.';
-      return;
-    }
-
     localStorage.setItem('licenca_ativada', 'sim');
     localStorage.setItem('chave_licenca', val);
-    LICENCIADO_PARA = linhas[0].comprador || '';
+    LICENCIADO_PARA = resultado[0].comprador || '';
     localStorage.setItem('comprador_nome', LICENCIADO_PARA);
     renderLicenca();
     atualizarContadorVisivel();
