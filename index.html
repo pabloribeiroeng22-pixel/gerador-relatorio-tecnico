@@ -400,9 +400,10 @@ textarea{resize:vertical;min-height:90px}
 
 <div id="paywall" style="display:none;position:fixed;inset:0;background:rgba(15,23,42,.55);z-index:800;align-items:center;justify-content:center;padding:16px">
   <div style="background:#fff;border-radius:14px;max-width:380px;width:100%;padding:24px 22px;max-height:88vh;overflow-y:auto">
+    <div id="paywall-pitch">
     <div style="text-align:center;font-size:13px;font-weight:700;color:#C2620A;letter-spacing:.03em">RELATÓRIOS GRATUITOS UTILIZADOS</div>
     <div style="text-align:center;font-size:19px;font-weight:700;color:#0F172A;margin-bottom:14px">Adquira o plano vitalício</div>
-    <div style="font-size:13px;color:#5b6472;text-align:center;margin-bottom:18px">Você já usou os 2 relatórios gratuitos deste aplicativo. Pague uma vez e use pra sempre, sem mensalidade — a licença vale para 1 aparelho.</div>
+    <div style="font-size:13px;color:#5b6472;text-align:center;margin-bottom:18px" id="paywall-msg">Você já usou os <span id="paywall-limite">3</span> relatórios gratuitos deste aplicativo. Pague uma vez e use pra sempre, sem mensalidade — a licença vale para 1 aparelho.</div>
 
     <div style="border:1.5px solid #185FA5;border-radius:10px;padding:16px;margin-bottom:16px;text-align:center">
       <div style="font-size:13px;font-weight:700;color:#0F172A">Plano Vitalício</div>
@@ -411,13 +412,21 @@ textarea{resize:vertical;min-height:90px}
     </div>
 
     <a href="https://pay.hotmart.com/SEU-LINK-DE-VENDA-AQUI" target="_blank" style="display:block;text-align:center;background:#C2620A;color:#fff;padding:13px;border-radius:9px;font-size:15px;font-weight:700;text-decoration:none;margin-bottom:10px">Comprar acesso vitalício</a>
-    <button onclick="fecharPaywall()" style="width:100%;background:none;border:none;color:#8a94a3;font-size:12.5px;padding:6px;cursor:pointer">Fechar por enquanto</button>
+    <button onclick="mostrarPaywallNeutro()" style="width:100%;background:none;border:none;color:#8a94a3;font-size:12.5px;padding:6px;cursor:pointer">Fechar por enquanto</button>
 
     <div style="border-top:1px solid #eef0f4;margin:16px 0 12px"></div>
     <div style="font-size:12.5px;font-weight:600;color:#0F172A;margin-bottom:8px">Já comprou? Digite sua chave de ativação</div>
     <input type="text" id="chave-input" placeholder="Chave recebida por e-mail" style="width:100%;box-sizing:border-box;margin-bottom:8px"/>
     <button id="btn-validar-chave" onclick="validarChave()" style="width:100%;background:#eef4fb;color:#185FA5;border:1px solid #9cc0e6;padding:10px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer">Validar chave</button>
     <div id="chave-msg" style="display:none;margin-top:8px;font-size:12px;font-weight:600;text-align:center"></div>
+    </div>
+
+    <div id="paywall-neutro" style="display:none;text-align:center">
+      <div style="font-size:32px;margin-bottom:10px">👍</div>
+      <div style="font-size:16px;font-weight:700;color:#0F172A;margin-bottom:10px">Sem problema</div>
+      <div style="font-size:13.5px;color:#5b6472;margin-bottom:22px;line-height:1.5">Quando quiser continuar gerando relatórios, é só voltar aqui e comprar o acesso, ou ativar sua chave se já tiver uma.</div>
+      <button onclick="fecharPaywall()" style="width:100%;background:#0F172A;color:#fff;border:none;padding:12px;border-radius:9px;font-size:14px;font-weight:700;cursor:pointer">Entendi</button>
+    </div>
   </div>
 </div>
 
@@ -442,7 +451,7 @@ var LICENCIADO_PARA = localStorage.getItem('comprador_nome') || '';
 // Preencher com os dados do seu projeto Supabase (ver instruções separadas).
 var SB_URL = 'https://fkqotzsujkuaeppnrpbt.supabase.co';
 var SB_KEY = 'sb_publishable_Eqp0KYbHuC2ME5C_HYAtCQ_IoT9hBUo';
-var LIMITE_GRATIS = 2;
+var LIMITE_GRATIS = 3;
 
 function licencaValida() {
   return (localStorage.getItem('licenca_ativada') || '') === 'sim';
@@ -473,7 +482,14 @@ function precisaPagar() {
 }
 
 function abrirPaywall() {
+  var el = document.getElementById('paywall-limite'); if (el) el.textContent = LIMITE_GRATIS;
+  document.getElementById('paywall-pitch').style.display = 'block';
+  document.getElementById('paywall-neutro').style.display = 'none';
   document.getElementById('paywall').style.display = 'flex';
+}
+function mostrarPaywallNeutro() {
+  document.getElementById('paywall-pitch').style.display = 'none';
+  document.getElementById('paywall-neutro').style.display = 'block';
 }
 function fecharPaywall() {
   document.getElementById('paywall').style.display = 'none';
@@ -1107,29 +1123,29 @@ function chk(el) { el.classList.toggle('active'); }
 
 var FASES = [
   {key:'implantacao', nome:'Implantação e Serviços Preliminares',
-   objetivo:'Verificar mobilização, canteiro, locação e preparação inicial da obra.',
+   objetivo:'Conferir a locação da obra em relação ao projeto e aos limites do terreno, as condições do canteiro, tapumes e instalações provisórias, e a limpeza/preparo do terreno antes do início dos serviços.',
    ativ:['Mobilização','Desmobilização','Canteiro','Instalações provisórias','Tapumes','Cercamento','Limpeza do terreno','Locação da obra','Gabarito','Remoção / transporte de resíduos'],
    subgrupos:[
      {nome:'Demolições', itens:['Demolição manual','Demolição mecanizada','Demolição de concreto','Demolição de alvenaria','Demolição de estrutura']}
    ]},
   {key:'terraplenagem', nome:'Terraplenagem',
-   objetivo:'Acompanhar cortes, aterros, compactação e movimentação de solo.',
+   objetivo:'Verificar cotas de corte e aterro, grau de compactação do solo, taludes e drenagem provisória, conforme o projeto de terraplenagem e o estudo geotécnico.',
    ativ:['Limpeza','Destocamento','Corte','Aterro','Reaterro','Compactação','Regularização','Nivelamento','Transporte de solo','Bota-fora','Material de empréstimo','Desmonte de rocha'],
    subgrupos:[
      {nome:'Escavação', itens:['Manual','Mecanizada']}
    ]},
   {key:'drenagem', nome:'Drenagem e Obras de Terra',
-   objetivo:'Verificar sistemas de drenagem, contenção e obras de terra associadas.',
+   objetivo:'Conferir dimensionamento, declividade e execução dos sistemas de drenagem superficial e profunda, além da estabilidade das estruturas de contenção.',
    ativ:['Drenagem superficial','Drenagem profunda','Drenagem pluvial','Valetas','Sarjetas','Meio-fio','Bueiros','Galerias','Caixas','Drenos','Muros de contenção','Muros de arrimo']},
   {key:'fundacoes', nome:'Fundações',
-   objetivo:'Conferir posicionamento, dimensões, níveis e execução das fundações.',
+   objetivo:'Verificar posicionamento, cotas, dimensões e prumo das fundações em relação ao projeto estrutural, a armação antes da concretagem e a impermeabilização das peças em contato com o solo.',
    ativ:['Serviços de fundação','Escavação','Armação','Forma','Concretagem','Impermeabilização','Reaterro'],
    subgrupos:[
      {nome:'Fundação superficial', itens:['Sapatas','Blocos','Baldrames','Radier']},
      {nome:'Fundação profunda', itens:['Estacas','Hélice contínua','Estaca pré-moldada','Estaca metálica','Estaca escavada','Tubulão']}
    ]},
   {key:'estrutura', nome:'Estrutura de Concreto',
-   objetivo:'Avaliar prumo, alinhamento, estabilidade e qualidade dos elementos estruturais.',
+   objetivo:'Conferir formas, escoramento e armação antes da concretagem, prumo e alinhamento dos elementos, e o processo de cura do concreto conforme especificação de projeto.',
    subgrupos:[
      {nome:'Forma', itens:['Montagem','Escoramento','Desforma','Reaproveitamento']},
      {nome:'Armadura', itens:['Corte','Dobra','Montagem','Posicionamento']},
@@ -1138,49 +1154,49 @@ var FASES = [
      {nome:'Concretagem por etapa', itens:['Etapa 01','Etapa 02','Etapa 03','Etapa 04','Etapa 05']}
    ]},
   {key:'alvenaria', nome:'Alvenaria e Fechamentos',
-   objetivo:'Verificar execução de alvenaria, vedações e fechamentos.',
+   objetivo:'Verificar prumo, esquadro e alinhamento das alvenarias, amarração, vergas e contravergas, e a conformidade com o projeto de modulação.',
    ativ:['Drywall','Steel Frame','Divisórias','Vergas','Contravergas','Muros','Fechamentos externos','Fachadas'],
    subgrupos:[
      {nome:'Alvenaria', itens:['Bloco de concreto','Bloco cerâmico','Alvenaria estrutural','Alvenaria de vedação']}
    ]},
   {key:'cobertura', nome:'Cobertura',
-   objetivo:'Verificar estrutura, fixações e estanqueidade da cobertura.',
+   objetivo:'Conferir inclinação, fixação das telhas, pontos de vedação e estanqueidade da cobertura, incluindo calhas e captação de águas pluviais.',
    ativ:['Estrutura','Telhamento','Telhas','Calhas','Rufos','Condutores','Cobertura metálica','Cobertura termoacústica','Impermeabilização']},
   {key:'eletrica', nome:'Instalações Elétricas',
-   objetivo:'Acompanhar execução das instalações elétricas e sistemas associados.',
+   objetivo:'Verificar execução conforme o projeto elétrico, dimensionamento de condutores e proteções, aterramento e testes de continuidade antes do fechamento das paredes.',
    ativ:['Infraestrutura','Eletrodutos','Eletrocalhas','Cabeamento','Quadros','Tomadas','Iluminação','SPDA','Aterramento elétrico','Subestação','Gerador','Automação']},
   {key:'hidrossanitarias', nome:'Instalações Hidrossanitárias',
-   objetivo:'Verificar execução das instalações de água, esgoto e drenagem.',
+   objetivo:'Conferir traçado das tubulações, declividades e testes de estanqueidade, conforme o projeto hidrossanitário, antes do fechamento.',
    ativ:['Água fria','Água quente','Esgoto','Águas pluviais','Drenagem','Reservatórios','Bombas','Louças','Metais']},
   {key:'especiais', nome:'Instalações Especiais',
-   objetivo:'Acompanhar instalações especiais (incêndio, climatização, segurança etc.).',
+   objetivo:'Verificar execução das instalações especiais conforme projetos específicos e normas aplicáveis (incêndio, climatização, segurança), incluindo testes funcionais quando cabível.',
    ativ:['Incêndio','Gás','Ar-condicionado','Ventilação','Exaustão','Elevadores','Telecomunicações','CFTV','Controle de acesso','Automação predial']},
   {key:'impermeabilizacao', nome:'Impermeabilização',
-   objetivo:'Verificar impermeabilização de elementos sujeitos à umidade.',
+   objetivo:'Conferir preparo da superfície, aplicação do sistema impermeabilizante e teste de estanqueidade (lâmina d\'água) antes do recobrimento.',
    ativ:['Fundação','Baldrame','Laje','Cobertura','Banheiro','Área molhada','Reservatório','Subsolo','Muro de arrimo','Juntas']},
   {key:'revestimentos', nome:'Revestimentos',
-   objetivo:'Avaliar execução e acabamento dos revestimentos.',
+   objetivo:'Verificar planicidade, prumo, juntas e aderência dos revestimentos, conforme especificação de projeto e normas de assentamento.',
    ativ:['Chapisco','Emboço','Reboco','Massa','Cerâmica','Porcelanato','Pedra','Pastilha','Textura','Fachada']},
   {key:'pisos', nome:'Pisos',
-   objetivo:'Verificar preparação, execução e acabamento dos pisos.',
+   objetivo:'Conferir nivelamento, caimento quando aplicável, juntas de dilatação e acabamento dos pisos, conforme especificação de projeto.',
    ativ:['Preparação','Contrapiso','Piso de concreto','Piso industrial','Piso cerâmico','Porcelanato','Piso epóxi','Piso vinílico','Piso elevado','Pavimentação']},
   {key:'forros', nome:'Forros',
-   objetivo:'Verificar execução dos forros.',
+   objetivo:'Verificar nivelamento, fixação e acabamento dos forros, incluindo pontos de acesso para manutenção quando previstos em projeto.',
    ativ:['Gesso','Gesso acartonado','Modular','PVC','Metálico']},
   {key:'esquadrias', nome:'Esquadrias e Vidros',
-   objetivo:'Verificar esquadrias, portas, janelas e vidros.',
+   objetivo:'Conferir nivelamento, vedação e funcionamento de portas e janelas, e a conformidade dos vidros com a especificação (espessura, tipo, normas de segurança).',
    ativ:['Portas','Janelas','Alumínio','PVC','Madeira','Vidros','Fachadas','Pele de vidro']},
   {key:'serralheria', nome:'Serralheria',
-   objetivo:'Verificar guarda-corpos, gradis e demais peças de serralheria.',
+   objetivo:'Verificar dimensões, fixação e altura regulamentar de guarda-corpos e demais peças de serralheria, conforme projeto e normas de segurança.',
    ativ:['Guarda-corpo','Corrimão','Gradil','Portões','Estruturas leves','Peças especiais']},
   {key:'pintura', nome:'Pintura',
-   objetivo:'Verificar preparação e execução da pintura.',
+   objetivo:'Conferir preparo da superfície, número de demãos e uniformidade de cor e acabamento da pintura, conforme especificação.',
    ativ:['Preparação','Selador','Massa','Pintura interna','Pintura externa','Pintura industrial','Pintura metálica','Demarcação']},
   {key:'externa', nome:'Área Externa / Urbanização',
-   objetivo:'Verificar obras de urbanização e áreas externas.',
+   objetivo:'Conferir execução de pavimentação, drenagem superficial e paisagismo das áreas externas, conforme o projeto de urbanização.',
    ativ:['Pavimentação','Calçadas','Meio-fio','Estacionamento','Paisagismo','Jardinagem','Cercamento','Portões','Sinalização','Iluminação externa']},
   {key:'entrega', nome:'Entrega / Pós-Obra',
-   objetivo:'Verificar condições finais e entrega da obra.',
+   objetivo:'Conferir a lista de pendências (punch list), realizar os testes finais dos sistemas e reunir a documentação técnica (as built) necessária para a entrega da obra.',
    ativ:['Limpeza final','Punch List','Correções','Vistoria','As Built','Documentação','Manual','Entrega','Assistência técnica']}
 ];
 var EXTRAS = [{key:'outros', nome:'Outros'}];
