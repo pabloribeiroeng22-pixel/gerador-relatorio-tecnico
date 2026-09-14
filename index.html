@@ -1121,29 +1121,29 @@ function chk(el) { el.classList.toggle('active'); }
 
 var FASES = [
   {key:'implantacao', nome:'Implantação e Serviços Preliminares',
-   objetivo:'Conferir a locação da obra em relação ao projeto e aos limites do terreno, as condições do canteiro, tapumes e instalações provisórias, e a limpeza/preparo do terreno antes do início dos serviços.',
+   objetivo:'',
    ativ:['Mobilização','Desmobilização','Canteiro','Instalações provisórias','Tapumes','Cercamento','Limpeza do terreno','Locação da obra','Gabarito','Remoção / transporte de resíduos'],
    subgrupos:[
      {nome:'Demolições', itens:['Demolição manual','Demolição mecanizada','Demolição de concreto','Demolição de alvenaria','Demolição de estrutura']}
    ]},
   {key:'terraplenagem', nome:'Terraplenagem',
-   objetivo:'Verificar cotas de corte e aterro, grau de compactação do solo, taludes e drenagem provisória, conforme o projeto de terraplenagem e o estudo geotécnico.',
+   objetivo:'',
    ativ:['Limpeza','Destocamento','Corte','Aterro','Reaterro','Compactação','Regularização','Nivelamento','Transporte de solo','Bota-fora','Material de empréstimo','Desmonte de rocha'],
    subgrupos:[
      {nome:'Escavação', itens:['Manual','Mecanizada']}
    ]},
   {key:'drenagem', nome:'Drenagem e Obras de Terra',
-   objetivo:'Conferir dimensionamento, declividade e execução dos sistemas de drenagem superficial e profunda, além da estabilidade das estruturas de contenção.',
+   objetivo:'',
    ativ:['Drenagem superficial','Drenagem profunda','Drenagem pluvial','Valetas','Sarjetas','Meio-fio','Bueiros','Galerias','Caixas','Drenos','Muros de contenção','Muros de arrimo']},
   {key:'fundacoes', nome:'Fundações',
-   objetivo:'Verificar posicionamento, cotas, dimensões e prumo das fundações em relação ao projeto estrutural, a armação antes da concretagem e a impermeabilização das peças em contato com o solo.',
+   objetivo:'',
    ativ:['Serviços de fundação','Escavação','Armação','Forma','Concretagem','Impermeabilização','Reaterro'],
    subgrupos:[
      {nome:'Fundação superficial', itens:['Sapatas','Blocos','Baldrames','Radier']},
      {nome:'Fundação profunda', itens:['Estacas','Hélice contínua','Estaca pré-moldada','Estaca metálica','Estaca escavada','Tubulão']}
    ]},
   {key:'estrutura', nome:'Estrutura de Concreto',
-   objetivo:'Conferir formas, escoramento e armação antes da concretagem, prumo e alinhamento dos elementos, e o processo de cura do concreto conforme especificação de projeto.',
+   objetivo:'',
    subgrupos:[
      {nome:'Forma', itens:['Montagem','Escoramento','Desforma','Reaproveitamento']},
      {nome:'Armadura', itens:['Corte','Dobra','Montagem','Posicionamento']},
@@ -1152,49 +1152,49 @@ var FASES = [
      {nome:'Concretagem por etapa', itens:['Etapa 01','Etapa 02','Etapa 03','Etapa 04','Etapa 05']}
    ]},
   {key:'alvenaria', nome:'Alvenaria e Fechamentos',
-   objetivo:'Verificar prumo, esquadro e alinhamento das alvenarias, amarração, vergas e contravergas, e a conformidade com o projeto de modulação.',
+   objetivo:'',
    ativ:['Drywall','Steel Frame','Divisórias','Vergas','Contravergas','Muros','Fechamentos externos','Fachadas'],
    subgrupos:[
      {nome:'Alvenaria', itens:['Bloco de concreto','Bloco cerâmico','Alvenaria estrutural','Alvenaria de vedação']}
    ]},
   {key:'cobertura', nome:'Cobertura',
-   objetivo:'Conferir inclinação, fixação das telhas, pontos de vedação e estanqueidade da cobertura, incluindo calhas e captação de águas pluviais.',
+   objetivo:'',
    ativ:['Estrutura','Telhamento','Telhas','Calhas','Rufos','Condutores','Cobertura metálica','Cobertura termoacústica','Impermeabilização']},
   {key:'eletrica', nome:'Instalações Elétricas',
-   objetivo:'Verificar execução conforme o projeto elétrico, dimensionamento de condutores e proteções, aterramento e testes de continuidade antes do fechamento das paredes.',
+   objetivo:'',
    ativ:['Infraestrutura','Eletrodutos','Eletrocalhas','Cabeamento','Quadros','Tomadas','Iluminação','SPDA','Aterramento elétrico','Subestação','Gerador','Automação']},
   {key:'hidrossanitarias', nome:'Instalações Hidrossanitárias',
-   objetivo:'Conferir traçado das tubulações, declividades e testes de estanqueidade, conforme o projeto hidrossanitário, antes do fechamento.',
+   objetivo:'',
    ativ:['Água fria','Água quente','Esgoto','Águas pluviais','Drenagem','Reservatórios','Bombas','Louças','Metais']},
   {key:'especiais', nome:'Instalações Especiais',
-   objetivo:'Verificar execução das instalações especiais conforme projetos específicos e normas aplicáveis (incêndio, climatização, segurança), incluindo testes funcionais quando cabível.',
+   objetivo:'',
    ativ:['Incêndio','Gás','Ar-condicionado','Ventilação','Exaustão','Elevadores','Telecomunicações','CFTV','Controle de acesso','Automação predial']},
   {key:'impermeabilizacao', nome:'Impermeabilização',
-   objetivo:'Conferir preparo da superfície, aplicação do sistema impermeabilizante e teste de estanqueidade (lâmina d\'água) antes do recobrimento.',
+   objetivo:'',
    ativ:['Fundação','Baldrame','Laje','Cobertura','Banheiro','Área molhada','Reservatório','Subsolo','Muro de arrimo','Juntas']},
   {key:'revestimentos', nome:'Revestimentos',
-   objetivo:'Verificar planicidade, prumo, juntas e aderência dos revestimentos, conforme especificação de projeto e normas de assentamento.',
+   objetivo:'',
    ativ:['Chapisco','Emboço','Reboco','Massa','Cerâmica','Porcelanato','Pedra','Pastilha','Textura','Fachada']},
   {key:'pisos', nome:'Pisos',
-   objetivo:'Conferir nivelamento, caimento quando aplicável, juntas de dilatação e acabamento dos pisos, conforme especificação de projeto.',
+   objetivo:'',
    ativ:['Preparação','Contrapiso','Piso de concreto','Piso industrial','Piso cerâmico','Porcelanato','Piso epóxi','Piso vinílico','Piso elevado','Pavimentação']},
   {key:'forros', nome:'Forros',
-   objetivo:'Verificar nivelamento, fixação e acabamento dos forros, incluindo pontos de acesso para manutenção quando previstos em projeto.',
+   objetivo:'',
    ativ:['Gesso','Gesso acartonado','Modular','PVC','Metálico']},
   {key:'esquadrias', nome:'Esquadrias e Vidros',
-   objetivo:'Conferir nivelamento, vedação e funcionamento de portas e janelas, e a conformidade dos vidros com a especificação (espessura, tipo, normas de segurança).',
+   objetivo:'',
    ativ:['Portas','Janelas','Alumínio','PVC','Madeira','Vidros','Fachadas','Pele de vidro']},
   {key:'serralheria', nome:'Serralheria',
-   objetivo:'Verificar dimensões, fixação e altura regulamentar de guarda-corpos e demais peças de serralheria, conforme projeto e normas de segurança.',
+   objetivo:'',
    ativ:['Guarda-corpo','Corrimão','Gradil','Portões','Estruturas leves','Peças especiais']},
   {key:'pintura', nome:'Pintura',
-   objetivo:'Conferir preparo da superfície, número de demãos e uniformidade de cor e acabamento da pintura, conforme especificação.',
+   objetivo:'',
    ativ:['Preparação','Selador','Massa','Pintura interna','Pintura externa','Pintura industrial','Pintura metálica','Demarcação']},
   {key:'externa', nome:'Área Externa / Urbanização',
-   objetivo:'Conferir execução de pavimentação, drenagem superficial e paisagismo das áreas externas, conforme o projeto de urbanização.',
+   objetivo:'',
    ativ:['Pavimentação','Calçadas','Meio-fio','Estacionamento','Paisagismo','Jardinagem','Cercamento','Portões','Sinalização','Iluminação externa']},
   {key:'entrega', nome:'Entrega / Pós-Obra',
-   objetivo:'Conferir a lista de pendências (punch list), realizar os testes finais dos sistemas e reunir a documentação técnica (as built) necessária para a entrega da obra.',
+   objetivo:'',
    ativ:['Limpeza final','Punch List','Correções','Vistoria','As Built','Documentação','Manual','Entrega','Assistência técnica']}
 ];
 var EXTRAS = [{key:'outros', nome:'Outros'}];
@@ -1262,7 +1262,33 @@ function abaSelect(sel) {
   if (sel.value) {
     var painel = document.getElementById('p-' + sel.value);
     if (painel) painel.classList.add('show');
+    carregarObjetivo(sel.value);
   }
+}
+
+var objetivosCache = {};
+function carregarObjetivo(key) {
+  var el = document.getElementById('obj-' + key);
+  if (!el) return; // grupo sem campo de objetivo (ex: EXTRAS)
+
+  if (objetivosCache[key] !== undefined) {
+    // só preenche se o usuário ainda não digitou nada em cima
+    if (!el.value) el.value = objetivosCache[key];
+    return;
+  }
+  if (el.value) return; // já tem texto (usuário editou ou já veio preenchido)
+
+  el.placeholder = 'Carregando objetivo da vistoria...';
+  fetch(SB_URL + '/functions/v1/checklist-objetivo?grupo=' + encodeURIComponent(key))
+    .then(function(r){ return r.json(); })
+    .then(function(data){
+      if (data && data.objetivo) {
+        objetivosCache[key] = data.objetivo;
+        if (!el.value) el.value = data.objetivo;
+      }
+    })
+    .catch(function(){ /* sem internet: usuário ainda pode digitar manualmente */ })
+    .finally(function(){ el.placeholder = ''; });
 }
 
 function toggleSub(headEl) {
@@ -1536,7 +1562,7 @@ function limpar() {
   document.querySelectorAll('.ativ-chk.active').forEach(function(el){ el.classList.remove('active'); });
   document.querySelectorAll('.ativ-pct').forEach(function(el){ el.value=''; });
   document.querySelectorAll('.ativ-pct-wrap').forEach(function(el){ el.style.display='none'; });
-  FASES.forEach(function(f){ var el=document.getElementById('obj-'+f.key); if(el) el.value=f.objetivo; });
+  FASES.forEach(function(f){ var el=document.getElementById('obj-'+f.key); if(el) el.value = objetivosCache[f.key] || ''; });
   atualizarMarcas();
   document.querySelectorAll('.panel.show').forEach(function(p){ p.classList.remove('show'); });
   document.getElementById('fases-tabs').value = '';
