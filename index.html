@@ -93,6 +93,7 @@ textarea{resize:vertical;min-height:90px}
 .ativ-pct{flex:1;width:0;box-sizing:border-box;font-size:12px;padding:6px 4px 6px 8px;border:none;background:transparent;color:#185FA5;font-weight:600;text-align:right}
 .ativ-pct-sign{font-size:12px;color:#185FA5;font-weight:600;padding:6px 8px 6px 2px}
 .ativ-chk.active{background:#185FA5;border-color:#185FA5;color:#fff;font-weight:600}
+.ativ-desc{font-size:11.5px;color:#445;background:#f4f7fb;border-left:3px solid #185FA5;padding:8px 10px;border-radius:0 6px 6px 0;line-height:1.45}
 .obj-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#1a3d6b;margin-bottom:5px}
 .obj-fase{width:100%;padding:9px 11px;border:1px solid #d0d8e4;border-radius:8px;font-size:13px;font-family:inherit;resize:vertical;color:#333;margin-bottom:4px;box-sizing:border-box}
 .tab.preenchida::before{content:'● ';color:#16a34a}
@@ -278,11 +279,11 @@ textarea{resize:vertical;min-height:90px}
   <div class="field-row c2">
     <div>
       <label>Responsável técnico</label>
-      <input type="text" id="inp-eng-nome" placeholder="Nome do engenheiro" oninput="atualizarConfig()"/>
+      <input type="text" id="inp-eng-nome" placeholder="Nome do profissional" oninput="atualizarConfig()"/>
     </div>
     <div>
-      <label>CREA</label>
-      <input type="text" id="inp-eng-crea" placeholder="00.000/D-PR" oninput="atualizarConfig()"/>
+      <label>CREA / CAU</label>
+      <input type="text" id="inp-eng-crea" placeholder="00.000/D-PR ou A00000-0" oninput="atualizarConfig()"/>
     </div>
   </div>
 </div>
@@ -1108,12 +1109,14 @@ function atualizarMarcas() {
 
 function chkAtiv(el) {
   el.classList.toggle('active');
+  var ativo = el.classList.contains('active');
   var wrap = el.nextElementSibling;
   if (wrap && wrap.classList.contains('ativ-pct-wrap')) {
-    var ativo = el.classList.contains('active');
     wrap.style.display = ativo ? 'flex' : 'none';
     if (!ativo) { var inp = wrap.querySelector('.ativ-pct'); if (inp) inp.value = ''; }
   }
+  var desc = el.parentElement.querySelector('.ativ-desc');
+  if (desc) { desc.style.display = ativo ? 'block' : 'none'; }
   atualizarMarcas();
 }
 
@@ -1202,11 +1205,29 @@ var FASES = [
 ];
 var EXTRAS = [{key:'outros', nome:'Outros'}];
 
-function chipsHtml(itens) {
+// Descrições técnicas por atividade — exclusivas do grupo "Conformidade
+// Arquitetônica" (grupo 20). Preenchem automaticamente um resumo do que
+// observar quando o item é marcado, com base em normas ABNT de referência.
+var DESCRICOES_TECNICAS = {
+  'Acabamentos e arremates': 'Verificar planeza e uniformidade dos acabamentos (paredes, tetos e arremates entre superfícies). Como referência de tolerância, a NBR 13755 admite irregularidades graduais de no máximo 3 mm em relação a uma régua de 2 m. Observar continuidade em quinas, rodapés e encontros entre materiais distintos, conforme detalhamento do projeto executivo.',
+  'Esquadrias (alinhamento e vedação)': 'Conferir prumo, nível e alinhamento das esquadrias instaladas, além da continuidade da vedação (selante/contramarco) contra infiltração. A NBR 10821 estabelece os requisitos de desempenho de esquadrias externas — estanqueidade à água, permeabilidade ao ar e resistência ao vento — que devem ser compatíveis com a classe especificada em projeto para a região e o pavimento.',
+  'Paginação de piso e revestimento': 'Verificar se a paginação executada (alinhamento de juntas, módulo das peças e largura de junta) confere com o projeto de paginação, evitando recortes estreitos em pontos visíveis. A NBR 13755/NBR 13818 recomendam largura mínima de junta de assentamento de 5 mm e paginação real testada previamente em área piloto, quando aplicável.',
+  'Acessibilidade (NBR 9050)': 'Checar rotas acessíveis conforme NBR 9050: largura livre de circulação mínima de 1,20 m (recomendável 1,50 m), vão livre de portas de no mínimo 0,80 m, rampas com inclinação máxima de 8,33% e corrimãos em duas alturas (0,70 m e 0,92 m). Em sanitários, conferir barras de apoio fixadas a 0,75 m e espaço de manobra com diâmetro de 1,50 m.',
+  'Conformidade com projeto executivo': 'Comparar o que foi efetivamente construído (dimensões, compartimentação, posição de vãos e elementos) com o projeto executivo aprovado. Divergências identificadas devem ser registradas para avaliar se configuram alteração de projeto passível de regularização junto ao órgão competente.',
+  'Compatibilização entre projetos': 'Verificar interferências físicas entre as disciplinas executadas em campo — arquitetura, estrutura e instalações (elétrica/hidrossanitária) — como traçados sobrepostos, furações não previstas ou recuos insuficientes. A NBR 15575 trata a compatibilização entre disciplinas como parte do desempenho da edificação, não apenas como etapa de projeto.',
+  'Pé-direito e dimensões de projeto': 'Conferir se o pé-direito executado e as dimensões dos ambientes atendem ao projeto aprovado e aos mínimos do código de obras/plano diretor municipal, considerando eventuais rebaixos de forro, vigas aparentes ou instalações suspensas que reduzam a altura livre útil.',
+  'Elementos decorativos e detalhamento': 'Avaliar a qualidade de execução de elementos de detalhamento arquitetônico (molduras, forros diferenciados, elementos de fachada, marcenaria de acabamento) frente ao detalhamento de projeto, incluindo fixação, alinhamento e integração com os demais acabamentos do ambiente.'
+};
+
+function chipsHtml(itens, descMap) {
   return itens.map(function(a){
+    var descHtml = (descMap && descMap[a])
+      ? '<div class="ativ-desc" style="display:none">'+descMap[a]+'</div>'
+      : '';
     return '<div class="ativ-item">'
       + '<div class="ativ-chk" onclick="chkAtiv(this)" data-val="'+a+'">'+a+'</div>'
       + '<div class="ativ-pct-wrap" style="display:none"><input type="number" class="ativ-pct" min="0" max="100" placeholder="0"><span class="ativ-pct-sign">%</span></div>'
+      + descHtml
       + '</div>';
   }).join('');
 }
@@ -1237,7 +1258,7 @@ function renderFases() {
   var panelsHtml = '';
   FASES.forEach(function(f){
     tabsHtml += '<option value="'+f.key+'">'+f.nome+'</option>';
-    var ativHtml = f.ativ ? chipsHtml(f.ativ) : '';
+    var ativHtml = f.ativ ? chipsHtml(f.ativ, f.key === 'conformidade_arquitetonica' ? DESCRICOES_TECNICAS : null) : '';
     var subHtml = f.subgrupos ? subgruposHtml(f.key, f.subgrupos) : '';
     panelsHtml += '<div id="p-'+f.key+'" class="panel">'
       + '<div class="ativ-label">Atividades vistoriadas</div>'
@@ -1316,13 +1337,24 @@ function atividadesMarcadas(key) {
   });
 }
 
+// Notas técnicas automáticas (só existem para o grupo Conformidade Arquitetônica)
+function notasTecnicasMarcadas(key) {
+  if (!DESCRICOES_TECNICAS) return [];
+  return Array.from(document.querySelectorAll('#p-'+key+' .ativ-chk.active')).map(function(el){
+    var nome = el.getAttribute('data-val');
+    var desc = DESCRICOES_TECNICAS[nome];
+    return desc ? {nome:nome, desc:desc} : null;
+  }).filter(Boolean);
+}
+
 // Retorna os dados das fases preenchidas (com equipe, atividades ou objetivo alterado) + extras
 function equipeLinhas() {
   var grupos = FASES.map(function(f){
     var ativ = atividadesMarcadas(f.key);
     var objEl = document.getElementById('obj-'+f.key);
     var obj = objEl ? objEl.value.trim() : '';
-    return {fase:f.nome, membros:[], atividades:ativ, objetivo:obj};
+    var notas = notasTecnicasMarcadas(f.key);
+    return {fase:f.nome, membros:[], atividades:ativ, objetivo:obj, notasTecnicas:notas};
   }).filter(function(g){ return g.atividades.length; });
 
   var extras = EXTRAS.map(function(e){
@@ -1608,6 +1640,11 @@ function gerarPDF() {
         var inner = '<div class="efase"><div class="efase-t">'+g.fase+'</div>';
         if (g.objetivo) inner += '<div class="efase-obj"><strong>Objetivo:</strong> '+g.objetivo+'</div>';
         if (g.atividades && g.atividades.length) inner += '<div class="efase-ativ"><strong>Atividades:</strong> '+g.atividades.join(' • ')+'</div>';
+        if (g.notasTecnicas && g.notasTecnicas.length) {
+          inner += '<div class="efase-notas"><strong>Pontos técnicos observados:</strong><ul>'
+            + g.notasTecnicas.map(function(n){ return '<li><strong>'+n.nome+':</strong> '+n.desc+'</li>'; }).join('')
+            + '</ul></div>';
+        }
         if (g.detalhe) inner += '<div class="efase-ativ"><strong>Detalhe:</strong> '+g.detalhe+'</div>';
         return inner + '</div>';
       }).join('')
@@ -1688,7 +1725,10 @@ function gerarPDF() {
   +'.efase-obj{font-size:9.5pt;color:#333;padding:2px 2px 2px 8px;line-height:1.4}'
   +'.efase-ativ{font-size:9.5pt;color:#333;padding:2px 2px 2px 8px;line-height:1.4}'
   +'.efase-eq{font-size:9.5pt;color:#111;padding:2px 2px 4px 8px;line-height:1.4}'
-  +'.efase-obj strong,.efase-ativ strong,.efase-eq strong{color:#1a3d6b;font-weight:700}'
+  +'.efase-notas{font-size:9pt;color:#333;padding:4px 2px 2px 8px;line-height:1.45}'
+  +'.efase-notas ul{margin:3px 0 0 16px;padding:0}'
+  +'.efase-notas li{margin-bottom:4px}'
+  +'.efase-obj strong,.efase-ativ strong,.efase-eq strong,.efase-notas strong{color:#1a3d6b;font-weight:700}'
   +'.pdf-tl{padding:2px 0}'
   +'.pdf-tl-step{position:relative;padding:0 0 9px 26px;min-height:20px}'
   +'.pdf-tl-dot{position:absolute;left:0;top:0;width:17px;height:17px;border-radius:50%;color:#fff;font-size:9pt;font-weight:700;text-align:center;line-height:17px}'
@@ -1722,7 +1762,7 @@ function gerarPDF() {
   +'</div>'
   +(sitVal?'<div class="sec"><div class="st">Situação atual</div><div style="font-size:10pt;line-height:1.6;color:#111;padding:9px 12px;background:#eff6ff;border:0.75pt solid #bfdbfe;border-radius:5px">'+sitVal.replace(/\n/g,'<br>')+'</div></div>':'')
   +'<div class="sec"><div class="st">Dados da visita</div>'
-  +'<div class="g3"><div class="f"><div class="fl">Data</div><div class="fv">'+dataFmt+'</div></div><div class="f"><div class="fl">Responsável técnico</div><div class="fv">'+ENG_NOME+'</div></div><div class="f"><div class="fl">CREA</div><div class="fv">'+ENG_CREA+'</div></div></div>'
+  +'<div class="g3"><div class="f"><div class="fl">Data</div><div class="fv">'+dataFmt+'</div></div><div class="f"><div class="fl">Responsável técnico</div><div class="fv">'+ENG_NOME+'</div></div><div class="f"><div class="fl">CREA / CAU</div><div class="fv">'+ENG_CREA+'</div></div></div>'
   +'</div>'
   +(equipe.length?'<div class="sec"><div class="st">Atividades por grupo vistoriado</div>'+equipeHtml+'</div>':'')
   +tlHtml
@@ -1734,7 +1774,7 @@ function gerarPDF() {
       ? '<div class="ab-lado"><img class="ab-foto" src="'+fotoAssinData+'"/><div>'+(assImg?'<img src="'+assImg+'" style="width:150px;height:auto;display:block;margin:0 auto 2px"/>':'<div style="width:170px;border-bottom:1pt solid #333;margin-bottom:4px;height:48px"></div>')+'<div class="an">'+(assNome||'&nbsp;')+'</div><div class="ac">'+(assPapel||'Outra parte')+'</div></div></div>'
       : (assImg?'<img src="'+assImg+'" style="width:180px;height:auto;display:block;margin:0 auto 2px"/>':'<div style="width:230px;border-bottom:1pt solid #333;margin-bottom:4px;height:54px"></div>')+'<div class="an">'+(assNome||'&nbsp;')+'</div><div class="ac">'+(assPapel||'Outra parte')+'</div>'
     )+'</div>':'')
-  +'<div class="ab"><img src="'+ASSINATURA_IMG+'" style="width:180px;height:auto;display:block;margin:0 auto 2px"/><div class="an">'+ENG_NOME+'</div><div class="ac">CREA '+ENG_CREA+'</div></div>'
+  +'<div class="ab"><img src="'+ASSINATURA_IMG+'" style="width:180px;height:auto;display:block;margin:0 auto 2px"/><div class="an">'+ENG_NOME+'</div><div class="ac">CREA/CAU '+ENG_CREA+'</div></div>'
   +'</div>'
   +(LICENCIADO_PARA?'<div style="text-align:center;font-size:7pt;color:#9aa5b1;margin-top:18px;padding-top:8px;border-top:0.5pt solid #e2e8f0">Documento gerado pelo Gerador de Relatório Técnico — licenciado para '+LICENCIADO_PARA+'</div>':'')
   +'</div></body></html>';
