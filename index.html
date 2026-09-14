@@ -1613,8 +1613,26 @@ function gerarPDF() {
       }).join('')
     : '<span class="nd">Não informado</span>';
 
+  // Layout adaptável: poucas fotos aparecem bem maiores; conforme a
+  // quantidade cresce, o grid adensa pra caber sem estourar páginas.
+  // (cols, altura em mm de cada foto — a foto é cortada/cover, como já era)
+  function layoutFotos(n) {
+    if (n === 1) return {cols:1, alt:125};
+    if (n === 2) return {cols:2, alt:95};
+    if (n <= 4)  return {cols:2, alt:78};
+    if (n <= 6)  return {cols:3, alt:62};
+    return {cols:3, alt:50};
+  }
   var fotosHtml = fotos.length
-    ? '<div class="fg">' + fotos.map(function(f){ return '<div class="fb"><img src="'+f.src+'"/>'+(f.leg?'<p class="lg">'+f.leg+'</p>':'')+'</div>'; }).join('') + '</div>'
+    ? (function(){
+        var lay = layoutFotos(fotos.length);
+        var gapPx = 10, gapsTotal = (lay.cols - 1) * gapPx;
+        var boxW = 'calc((100% - ' + gapsTotal + 'px)/' + lay.cols + ')';
+        var itens = fotos.map(function(f){
+          return '<div class="fb" style="width:'+boxW+'"><img src="'+f.src+'" style="height:'+lay.alt+'mm"/>'+(f.leg?'<p class="lg">'+f.leg+'</p>':'')+'</div>';
+        }).join('');
+        return '<div class="fg">' + itens + '</div>';
+      })()
     : '';
 
   var endHtml = end
@@ -1681,8 +1699,9 @@ function gerarPDF() {
   +'.chip{font-size:8.5pt;padding:3px 11px;background:#e8eef7;color:#1a3d6b;font-weight:700;border-radius:3px}'
   +'.ta{font-size:10pt;line-height:1.7;color:#111;padding:5px 0;min-height:40px}'
   +'.nd{font-size:9.5pt;color:#999;font-style:italic}'
-  +'.fg{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:5px}'
-  +'.fb img{width:100%;height:118px;object-fit:cover;border-radius:4px;display:block}'
+  +'.fg{display:flex;flex-wrap:wrap;gap:10px;margin-top:5px}'
+  +'.fb{box-sizing:border-box;break-inside:avoid;page-break-inside:avoid}'
+  +'.fb img{width:100%;object-fit:cover;border-radius:4px;display:block}'
   +'.lg{font-size:8pt;color:#555;margin-top:3px;text-align:center;font-style:italic}'
   +'.ass{margin-top:16px;padding-top:10px;border-top:0.5pt solid #ccc;display:flex;justify-content:space-around;align-items:flex-end;gap:30px}'
   +'.ab{text-align:center}'
@@ -1691,7 +1710,7 @@ function gerarPDF() {
   +'.ac{font-size:8pt;color:#666}'
   +'.ab-lado{display:flex;align-items:flex-end;gap:9px;justify-content:center}'
   +'.ab-foto{width:90px;height:auto;border-radius:5px;border:0.5pt solid #d0d8e4;display:block}'
-  +'@media print{@page{size:A4;margin:18mm 16mm 16mm 16mm;margin-header:0;margin-footer:0}.page{padding:0;margin:0}.sec{page-break-inside:avoid}.fg{page-break-inside:avoid}.ass{page-break-inside:avoid}}'
+  +'@media print{@page{size:A4;margin:18mm 16mm 16mm 16mm;margin-header:0;margin-footer:0}.page{padding:0;margin:0}.sec{page-break-inside:avoid}.ass{page-break-inside:avoid}}'
   +'</style></head><body><div class="page">'
   +'<div style="text-align:center;margin-bottom:12px"><img src="'+logoEmpresa+'" style="height:60px;width:auto;display:inline-block"/></div>'
   +'<div class="header"><div class="hl"><h1>Relatório Técnico</h1><p>Vistoria e Acompanhamento de Obras</p></div><div class="hr"><strong>'+EMPRESA_NOME+'</strong>Data: <strong>'+dataFmt+'</strong></div></div>'
